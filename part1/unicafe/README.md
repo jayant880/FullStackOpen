@@ -1,12 +1,106 @@
-# React + Vite
+## 1.6: unicafe step 1
+Like most companies, the student restaurant of the University of Helsinki Unicafe collects feedback from its customers. Your task is to implement a web application for collecting customer feedback. There are only three options for feedback: good, neutral, and bad.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The application must display the total number of collected feedback for each category. Your final application could look like this:
 
-Currently, two official plugins are available:
+screenshot of feedback options
+Note that your application needs to work only during a single browser session. Once you refresh the page, the collected feedback is allowed to disappear.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+It is advisable to use the same structure that is used in the material and previous exercise. File main.jsx is as follows:
 
-## Expanding the ESLint configuration
+```jsx
+import ReactDOM from 'react-dom/client'
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+import App from './App'
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />)
+```
+You can use the code below as a starting point for the App.jsx file:
+```jsx
+import { useState } from 'react'
+
+const App = () => {
+  // save clicks of each button to its own state
+  const [good, setGood] = useState(0)
+  const [neutral, setNeutral] = useState(0)
+  const [bad, setBad] = useState(0)
+
+  return (
+    <div>
+      code here
+    </div>
+  )
+}
+
+export default App
+```
+
+## 1.7: unicafe step 2
+Expand your application so that it shows more statistics about the gathered feedback: the total number of collected feedback, the average score (the feedback values are: good 1, neutral 0, bad -1) and the percentage of positive feedback.
+
+average and percentage positive screenshot feedback
+
+## 1.8: unicafe step 3
+Refactor your application so that displaying the statistics is extracted into its own Statistics component. The state of the application should remain in the App root component.
+
+Remember that components should not be defined inside other components:
+```jsx
+// a proper place to define a component
+const Statistics = (props) => {
+  // ...
+}
+
+const App = () => {
+  const [good, setGood] = useState(0)
+  const [neutral, setNeutral] = useState(0)
+  const [bad, setBad] = useState(0)
+
+  // do not define a component within another component
+  const Statistics = (props) => {
+    // ...
+  }
+
+  return (
+    // ...
+  )
+}
+```
+
+## 1.9: unicafe step 4
+Change your application to display statistics only once feedback has been gathered.
+
+no feedback given text screenshot
+
+## 1.10: unicafe step 5
+Let's continue refactoring the application. Extract the following two components:
+
+Button handles the functionality of each feedback submission button.
+StatisticLine for displaying a single statistic, e.g. the average score.
+To be clear: the StatisticLine component always displays a single statistic, meaning that the application uses multiple components for rendering all of the statistics:
+```jsx
+const Statistics = (props) => {
+  /// ...
+  return(
+    <div>
+      <StatisticLine text="good" value ={...} />
+      <StatisticLine text="neutral" value ={...} />
+      <StatisticLine text="bad" value ={...} />
+      // ...
+    </div>
+  )
+}
+```
+The application's state should still be kept in the root App component.
+
+## 1.11*: unicafe step 6
+Display the statistics in an HTML table, so that your application looks roughly like this:
+
+screenshot of statistics table
+Remember to keep your console open at all times. If you see this warning in your console:
+
+console warning
+Then perform the necessary actions to make the warning disappear. Try pasting the error message into a search engine if you get stuck.
+
+Typical source of an error Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist. is from a Chrome extension. Try going to chrome://extensions/ and try disabling them one by one and refreshing React app page; the error should eventually disappear.
+
+Make sure that from now on you don't see any warnings in your console!
