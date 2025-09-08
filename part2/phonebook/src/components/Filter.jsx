@@ -2,7 +2,7 @@ const Filter = ({ persons, filterName, setFilterName, setFilterPersons }) => {
   const handleFilterChange = (e) => {
     const name = e.target.value;
     setFilterName(name);
-    const filterName = name.toLowerCase();
+    const filterName = name.toLowerCase().trim();
     const filteredPersons = persons.filter((person) =>
       person.name.toLowerCase().includes(filterName)
     );
