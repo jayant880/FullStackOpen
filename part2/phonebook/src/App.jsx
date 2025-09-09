@@ -6,34 +6,43 @@ import personService from "./services/personsServices";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
-  const [filterName, setFilterName] = useState("");
-  const [filterPersons, setFilterPersons] = useState(persons);
-
-  useEffect(() => {
-    setFilterPersons(persons);
-    setFilterName("");
-  }, [persons]);
+  const [filterQuery, setFilterQuery] = useState("");
+  const [filteredPersons, setFilteredPersons] = useState(persons);
 
   useEffect(() => {
     const fetchData = async () => {
-      const pre = await personService.getAllPersons();
-      setPersons(pre);
+      try {
+        const personData = await personService.getAllPersons();
+        setPersons(personData);
+      } catch (error) {
+        console.error("Error Fetching persons :", error);
+      }
     };
     fetchData();
-  }, [persons]);
+  }, []);
+
+  useEffect(() => {
+    if (filterQuery) {
+      const query = filterQuery.toLowerCase().trim();
+      const filtered = persons.filter((person) =>
+        person.name.toLowerCase().includes(query)
+      );
+      setFilteredPersons(filtered);
+    } else {
+      setFilteredPersons(persons);
+    }
+  }, [filterQuery, persons]);
 
   return (
     <div>
       <h2>Phone book</h2>
-      <Filter
-        persons={persons}
-        filterName={filterName}
-        setFilterName={setFilterName}
-        setFilterPersons={setFilterPersons}
-      />
+      <Filter filterQuery={filterQuery} setFilterQuery={setFilterQuery} />
       <PersonForm persons={persons} setPersons={setPersons} />
       <h2>Numbers</h2>
-      <Persons filterPersons={filterPersons} />
+      <Persons
+        persons={filterQuery ? filteredPersons : persons}
+        setPersons={setPersons}
+      />
     </div>
   );
 };

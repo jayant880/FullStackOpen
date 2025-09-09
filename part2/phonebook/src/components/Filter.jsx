@@ -1,24 +1,19 @@
-const Filter = ({ persons, filterName, setFilterName, setFilterPersons }) => {
+const Filter = ({ filterQuery, setFilterQuery }) => {
   const handleFilterChange = (e) => {
-    const name = e.target.value;
-    setFilterName(name);
-    const filterName = name.toLowerCase().trim();
-    const filteredPersons = persons.filter((person) =>
-      person.name.toLowerCase().includes(filterName)
-    );
-    setFilterPersons(filteredPersons);
+    setFilterQuery(e.target.value);
   };
+
   return (
-    <>
-      <div>
-        Filter shown with{" "}
-        <input
-          name="filteredName"
-          value={filterName}
-          onChange={handleFilterChange}
-        />
-      </div>
-    </>
+    <div>
+      <label htmlFor="filter">Filter shown with:</label>
+      <input
+        id="filter"
+        name="filter"
+        value={filterQuery}
+        onChange={handleFilterChange}
+        placeholder="Search contacts..."
+      />
+    </div>
   );
 };
 

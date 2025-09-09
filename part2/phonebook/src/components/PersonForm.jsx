@@ -1,45 +1,70 @@
 import { useState } from "react";
 import personsServices from "../services/personsServices";
 
-const PersonForm = ({ persons }) => {
+const PersonForm = ({ persons, setPersons }) => {
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (persons.find((person) => person.name === newName)) {
+
+    const existingPerson = persons.find(
+      (person) => person.name.toLowerCase() === newName.toLowerCase()
+    );
+
+    if (existingPerson) {
       if (
-        confirm(
-          `${newName} is already added to phonebook, replace the old number with the new one?`
+        window.confirm(
+          `${newName} is already in the phonebook. Replace the old number with the new one?`
         )
       ) {
-        const person = persons.find((persons) => persons.name === newName);
-        personsServices.updatePerson(person.id, {
-          ...person,
-          number: newNumber,
-        });
-        setNewName("");
-        setNewNumber("");
-      } else return;
+        personsServices
+          .updatePerson(existingPerson.id, {
+            ...existingPerson,
+            number: newNumber,
+          })
+          .then((updatedPerson) => {
+            setPersons(
+              persons.map((person) =>
+                person.id !== existingPerson.id ? person : updatedPerson
+              )
+            );
+            setNewName("");
+            setNewNumber("");
+          })
+          .catch((error) => {
+            console.error("Error updating person:", error);
+            alert(`Could not update ${newName}`);
+          });
+      }
     } else {
       const newPerson = {
         name: newName,
         number: newNumber,
       };
-      personsServices.createPerson(newPerson);
-      setNewName("");
-      setNewNumber("");
+
+      personsServices
+        .createPerson(newPerson)
+        .then((createdPerson) => {
+          setPersons([...persons, createdPerson]);
+          setNewName("");
+          setNewNumber("");
+        })
+        .catch((error) => {
+          console.error("Error creating person:", error);
+          alert(`Could not add ${newName}`);
+        });
     }
   };
 
   return (
     <div>
       <form onSubmit={handleSubmit}>
-        <h2>add a new</h2>
+        <h2>Add a new contact</h2>
         <div>
-          name :
+          <label htmlFor="name">Name:</label>
           <input
             type="text"
-            name="name"
             id="name"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
@@ -47,10 +72,9 @@ const PersonForm = ({ persons }) => {
           />
         </div>
         <div>
-          number :
+          <label htmlFor="number">Number:</label>
           <input
             type="text"
-            name="number"
             id="number"
             value={newNumber}
             onChange={(e) => setNewNumber(e.target.value)}
@@ -58,7 +82,7 @@ const PersonForm = ({ persons }) => {
           />
         </div>
         <div>
-          <button type="submit">add</button>
+          <button type="submit">Add</button>
         </div>
       </form>
     </div>
