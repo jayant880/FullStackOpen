@@ -7,20 +7,28 @@ const PersonForm = ({ persons }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (persons.find((person) => person.name === newName)) {
-      alert(`${newName} is already added to phone book`);
-      return;
+      if (
+        confirm(
+          `${newName} is already added to phonebook, replace the old number with the new one?`
+        )
+      ) {
+        const person = persons.find((persons) => persons.name === newName);
+        personsServices.updatePerson(person.id, {
+          ...person,
+          number: newNumber,
+        });
+        setNewName("");
+        setNewNumber("");
+      } else return;
+    } else {
+      const newPerson = {
+        name: newName,
+        number: newNumber,
+      };
+      personsServices.createPerson(newPerson);
+      setNewName("");
+      setNewNumber("");
     }
-    if (newName.trim() === "" || newNumber.trim() === "") {
-      alert("name and number both are required");
-      return;
-    }
-    const newPerson = {
-      name: newName,
-      number: newNumber,
-    };
-    personsServices.createPerson(newPerson);
-    setNewName("");
-    setNewNumber("");
   };
 
   return (
