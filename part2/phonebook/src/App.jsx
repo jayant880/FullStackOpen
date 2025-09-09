@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Filter from "./components/Filter";
 import PersonForm from "./components/PersonForm";
 import Persons from "./components/Persons";
-import axios from "axios";
+import personService from "./services/personsServices";
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -15,10 +15,12 @@ const App = () => {
   }, [persons]);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/persons")
-      .then((res) => setPersons(res.data));
-  }, []);
+    const fetchData = async () => {
+      const pre = await personService.getAllPersons();
+      setPersons(pre);
+    };
+    fetchData();
+  }, [persons]);
 
   return (
     <div>

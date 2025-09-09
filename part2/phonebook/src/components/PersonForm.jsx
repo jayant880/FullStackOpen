@@ -1,6 +1,7 @@
 import { useState } from "react";
+import personsServices from "../services/personsServices";
 
-const PersonForm = ({ persons, setPersons }) => {
+const PersonForm = ({ persons }) => {
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const handleSubmit = (e) => {
@@ -16,9 +17,8 @@ const PersonForm = ({ persons, setPersons }) => {
     const newPerson = {
       name: newName,
       number: newNumber,
-      id: persons.length + 1,
     };
-    setPersons(persons.concat(newPerson));
+    personsServices.createPerson(newPerson);
     setNewName("");
     setNewNumber("");
   };
