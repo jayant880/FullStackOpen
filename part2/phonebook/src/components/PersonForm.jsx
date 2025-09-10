@@ -1,7 +1,7 @@
 import { useState } from "react";
 import personsServices from "../services/personsServices";
 
-const PersonForm = ({ persons, setPersons }) => {
+const PersonForm = ({ persons, setPersons, setMessage, setError }) => {
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
 
@@ -31,10 +31,13 @@ const PersonForm = ({ persons, setPersons }) => {
             );
             setNewName("");
             setNewNumber("");
+            setError(false);
+            setMessage(`${newName} phone number has been updated`);
           })
           .catch((error) => {
             console.error("Error updating person:", error);
-            alert(`Could not update ${newName}`);
+            setError(true);
+            setMessage(`Could not update ${newName}`);
           });
       }
     } else {
@@ -49,10 +52,13 @@ const PersonForm = ({ persons, setPersons }) => {
           setPersons([...persons, createdPerson]);
           setNewName("");
           setNewNumber("");
+          setError(false);
+          setMessage(`Added ${newName}`);
         })
         .catch((error) => {
           console.error("Error creating person:", error);
-          alert(`Could not add ${newName}`);
+          setError(true);
+          setMessage(`Could not add ${newName}`);
         });
     }
   };

@@ -1,6 +1,6 @@
 import personsServices from "../services/personsServices";
 
-const Persons = ({ persons, setPersons }) => {
+const Persons = ({ persons, setPersons, setMessage, setError }) => {
   const handleDelete = (personToDelete) => {
     if (window.confirm(`Delete ${personToDelete.name}?`)) {
       personsServices
@@ -9,10 +9,13 @@ const Persons = ({ persons, setPersons }) => {
           setPersons(
             persons.filter((person) => person.id !== personToDelete.id)
           );
+          setError(false);
+          setMessage(`${personToDelete.name} deleted successfully`);
         })
         .catch((error) => {
           console.error("Error deleting person:", error);
-          alert(
+          setError(true);
+          setMessage(
             `Could not delete ${personToDelete.name}. They might have already been removed.`
           );
           personsServices
