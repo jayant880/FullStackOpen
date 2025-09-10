@@ -23,7 +23,7 @@ const App = () => {
 
   useEffect(() => {
     const matchedCountries = countries.filter((cou) =>
-      cou.name.common.toLowerCase().includes(country)
+      cou.name.common.toLowerCase().includes(country.toLowerCase())
     );
     setFilteredCountries(matchedCountries);
   }, [country, countries]);
@@ -40,7 +40,12 @@ const App = () => {
           </>
         ) : (
           filteredCountries.map((country) => (
-            <div key={country.name.common}>{country.name.common}</div>
+            <div key={country.name.common}>
+              <>{country.name.common}</>
+              <button onClick={() => setCountry(country.name.common)}>
+                Show
+              </button>
+            </div>
           ))
         )}
       </div>
