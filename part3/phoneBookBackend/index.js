@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 
-const persons = [
+let persons = [
     {
         "id": "1",
         "name": "Arto Hellas",
@@ -21,6 +21,11 @@ const persons = [
         "id": "4",
         "name": "Mary Poppendieck",
         "number": "39-23-6423122"
+    },
+    {
+        "id": "100",
+        "name": "the one that will be deleted",
+        "number": "000000000000"
     }
 ]
 
@@ -33,9 +38,23 @@ app.get("/api/persons/:id", (req, res) => {
     const id = req.params.id;
     const person = persons.find(per => per.id === id);
     if (!person) {
+        console.log("[GET][ERR] getting specific person");
         return res.status(400).send({ error: "person not found" });
     }
+    console.log("[GET] getting specific person");
     res.send(person);
+})
+
+app.delete("/api/persons/:id", (req, res) => {
+    const id = req.params.id;
+    const person = persons.find(per => per.id === id);
+    if (!person) {
+        console.log("[DEL][ERR] person not found");
+        return res.status(404).send({ error: "person not found" })
+    }
+    console.log("[DEL] deleting id: ", id);
+    persons = persons.filter(per => per.id !== id);
+    res.status(204).end();
 })
 
 app.get("/info", (req, res) => {
