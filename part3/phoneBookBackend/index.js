@@ -45,6 +45,7 @@ app.post("/api/persons", (req, res) => {
         console.log('[POST][ERR] missing content');
         return res.status(400).json({ error: 'content missing' });
     }
+    if (persons.find(per => per.name === personData.name)) return res.status(403).send({ error: "name must be unique" })
     const person = {
         id: idGenerator(),
         name: personData.name,
