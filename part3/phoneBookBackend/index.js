@@ -29,9 +29,31 @@ let persons = [
     }
 ]
 
+const idGenerator = () => {
+    return Math.floor(Math.random() * 1000 + 1);
+}
+
+app.use(express.json());
+
 app.get("/api/persons", (req, res) => {
     console.log("[GET] all persons");
     res.send(persons);
+})
+app.post("/api/persons", (req, res) => {
+    const personData = req.body;
+    if (!personData.name || !personData.number) {
+        console.log('[POST][ERR] missing content');
+        return res.status(400).json({ error: 'content missing' });
+    }
+    const person = {
+        id: idGenerator(),
+        name: personData.name,
+        number: personData.number,
+    }
+    console.log("[POST] Person Added successfully")
+    persons = persons.concat(person);
+    res.json(person);
+
 })
 
 app.get("/api/persons/:id", (req, res) => {
@@ -56,6 +78,7 @@ app.delete("/api/persons/:id", (req, res) => {
     persons = persons.filter(per => per.id !== id);
     res.status(204).end();
 })
+
 
 app.get("/info", (req, res) => {
     const info = `<div>Phonebook has info for ${persons.length} people</div><br><div>${new Date()}</div>`
