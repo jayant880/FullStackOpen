@@ -1,4 +1,5 @@
 const express = require("express");
+const morgan = require("morgan");
 const app = express();
 
 let persons = [
@@ -32,10 +33,10 @@ let persons = [
 const idGenerator = () => String(Math.floor(Math.random() * 1000 + 1));
 
 app.use(express.json());
+app.use(morgan('tiny'));
 
 // Fet all person
 app.get("/api/persons", (req, res) => {
-    console.log("[GET] all persons");
     res.send(persons);
 })
 
@@ -54,7 +55,6 @@ app.post("/api/persons", (req, res) => {
     }
     const person = { id: idGenerator(), name, number };
     persons = persons.concat(person);
-    console.log("[POST] Person Added successfully")
     res.status(201).json(person);
 })
 
@@ -66,7 +66,6 @@ app.get("/api/persons/:id", (req, res) => {
         console.log("[GET][ERR] getting specific person");
         return res.status(404).send({ error: "person not found" });
     }
-    console.log("[GET] getting specific person");
     res.json(person);
 })
 
@@ -79,13 +78,11 @@ app.delete("/api/persons/:id", (req, res) => {
         return res.status(404).json({ error: "person not found" })
     }
     persons = persons.filter(per => per.id !== id);
-    console.log("[DEL] deleting id: ", id);
     res.status(204).end();
 })
 
 app.get("/info", (req, res) => {
     const info = `<div>Phonebook has info for ${persons.length} people</div><br><div>${new Date()}</div>`
-    console.log("[GET] Info");
     res.send(info);
 })
 
