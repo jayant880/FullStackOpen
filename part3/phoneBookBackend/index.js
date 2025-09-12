@@ -29,57 +29,59 @@ let persons = [
     }
 ]
 
-const idGenerator = () => {
-    return Math.floor(Math.random() * 1000 + 1);
-}
+const idGenerator = () => String(Math.floor(Math.random() * 1000 + 1));
 
 app.use(express.json());
 
+// Fet all person
 app.get("/api/persons", (req, res) => {
     console.log("[GET] all persons");
     res.send(persons);
 })
-app.post("/api/persons", (req, res) => {
-    const personData = req.body;
-    if (!personData.name || !personData.number) {
-        console.log('[POST][ERR] missing content');
-        return res.status(400).json({ error: 'content missing' });
-    }
-    if (persons.find(per => per.name === personData.name)) return res.status(403).send({ error: "name must be unique" })
-    const person = {
-        id: idGenerator(),
-        name: personData.name,
-        number: personData.number,
-    }
-    console.log("[POST] Person Added successfully")
-    persons = persons.concat(person);
-    res.json(person);
 
+// add new person
+app.post("/api/persons", (req, res) => {
+    const { name, number } = req.body;
+
+    if (!name || !number) {
+        console.log("[POST][ERR] missing content");
+        return res.status(400).json({ error: 'content missing' })
+    }
+
+    if (persons.find(p => p.name === name)) {
+        console.log("[POST][ERR] name already exist");
+        return res.status(409).json({ error: "name must be unique" })
+    }
+    const person = { id: idGenerator(), name, number };
+    persons = persons.concat(person);
+    console.log("[POST] Person Added successfully")
+    res.status(201).json(person);
 })
 
+// Get person by ID
 app.get("/api/persons/:id", (req, res) => {
     const id = req.params.id;
     const person = persons.find(per => per.id === id);
     if (!person) {
         console.log("[GET][ERR] getting specific person");
-        return res.status(400).send({ error: "person not found" });
+        return res.status(404).send({ error: "person not found" });
     }
     console.log("[GET] getting specific person");
-    res.send(person);
+    res.json(person);
 })
 
+// Delete person by ID
 app.delete("/api/persons/:id", (req, res) => {
     const id = req.params.id;
     const person = persons.find(per => per.id === id);
     if (!person) {
         console.log("[DEL][ERR] person not found");
-        return res.status(404).send({ error: "person not found" })
+        return res.status(404).json({ error: "person not found" })
     }
-    console.log("[DEL] deleting id: ", id);
     persons = persons.filter(per => per.id !== id);
+    console.log("[DEL] deleting id: ", id);
     res.status(204).end();
 })
-
 
 app.get("/info", (req, res) => {
     const info = `<div>Phonebook has info for ${persons.length} people</div><br><div>${new Date()}</div>`
