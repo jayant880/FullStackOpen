@@ -33,7 +33,8 @@ let persons = [
 const idGenerator = () => String(Math.floor(Math.random() * 1000 + 1));
 
 app.use(express.json());
-app.use(morgan('tiny'));
+morgan.token('newPerson', function (req, res) { return JSON.stringify(req.body) });
+app.use(morgan(`:method :url :status :res[content-length] - :response-time ms :newPerson`));
 
 // Fet all person
 app.get("/api/persons", (req, res) => {
