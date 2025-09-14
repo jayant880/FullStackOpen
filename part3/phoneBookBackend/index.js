@@ -1,5 +1,6 @@
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
 const app = express();
 
 let persons = [
@@ -32,11 +33,12 @@ let persons = [
 
 const idGenerator = () => String(Math.floor(Math.random() * 1000 + 1));
 
+app.use(cors());
 app.use(express.json());
 morgan.token('newPerson', function (req, res) { return JSON.stringify(req.body) });
 app.use(morgan(`:method :url :status :res[content-length] - :response-time ms :newPerson`));
 
-// Fet all person
+// Get all person
 app.get("/api/persons", (req, res) => {
     res.send(persons);
 })
@@ -86,6 +88,8 @@ app.get("/info", (req, res) => {
     const info = `<div>Phonebook has info for ${persons.length} people</div><br><div>${new Date()}</div>`
     res.send(info);
 })
+
+// TODO: update person
 
 const PORT = 3001;
 app.listen(PORT, () => {
