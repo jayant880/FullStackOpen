@@ -1,0 +1,74 @@
+require("dotenv").config()
+const express = require('express');
+const morgan = require('morgan');
+const Person = require('./model/person');
+
+const app = express();
+
+const PORT = process.env.PORT || 3002;
+
+// middleware
+app.use(express.static('dist'));
+app.use(express.json());
+morgan.token('newPerson', function (req, res) { return JSON.stringify(req.body) });
+app.use(morgan(`:method :url :status :res[content-length] - :response-time ms :newPerson`));
+
+// endpoints
+// get all persons
+app.get('/api/persons', (req, res) => {
+    Person.find({}).then(result => {
+        res.status(200).json(result);
+    })
+});
+
+// save a person
+app.post('/api/persons', (req, res) => {
+    const { name, number } = req.body;
+
+    if (!name || !number) {
+        return res.status(400).json({ error: 'content missing' });
+    }
+
+    const person = new Person({ name, number });
+    person.save().then(savedPerson => res.json(savedPerson));
+});
+
+// get a person by id
+app.get('/api/persons/:id', (req, res) => {
+    const id = req.params.id;
+    Person.findById(id).then(person => {
+        person ? res.json(person) : res.status(404).end();
+    }).catch(error => {
+        console.error(error);
+    });
+});
+
+// delete a person by id
+app.delete('/api/persons/:id', (req, res) => {
+    const id = req.params.id;
+    Person.findByIdAndDelete(id)
+        .then(deletedPerson => {
+            if (!deletedPerson) {
+                return res.status(404).json({ error: 'Person not found' });
+            }
+            res.status(204).end();
+        }).catch(error => {
+            console.error(error);
+            res.status(500).json({ error: 'Error Deleting person' });
+        });
+});
+app.get('/info', (req, res) => {
+    Person.countDocuments({})
+        .then(count => {
+            const info = `<div>Phonebook has info for ${count} people</div><br><div>${new Date()}</div>`;
+            res.send(info);
+        })
+        .catch(error => {
+            console.error(error);
+            res.status(500).send('Error counting documents');
+        });
+});
+
+app.listen(PORT, () => {
+    console.log("Server is running in the server at " + PORT);
+});
