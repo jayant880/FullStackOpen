@@ -33,6 +33,18 @@ app.post('/api/persons', (req, res) => {
     person.save().then(savedPerson => res.json(savedPerson));
 });
 
+app.put('/api/persons/:id', (req, res) => {
+    const id = req.params.id;
+    const { name, number } = req.body;
+
+    Person.findById(id)
+        .then(person => {
+            if (!person) return res.status(404).end();
+            person.number = number;
+            return person.save().then(updatedPerson => res.json(updatedPerson))
+        }).catch(error => next(error));
+})
+
 // get a person by id
 app.get('/api/persons/:id', (req, res, next) => {
     const id = req.params.id;
