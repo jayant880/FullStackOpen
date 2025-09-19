@@ -34,13 +34,11 @@ app.post('/api/persons', (req, res) => {
 });
 
 // get a person by id
-app.get('/api/persons/:id', (req, res) => {
+app.get('/api/persons/:id', (req, res, next) => {
     const id = req.params.id;
     Person.findById(id).then(person => {
         person ? res.json(person) : res.status(404).end();
-    }).catch(error => {
-        console.error(error);
-    });
+    }).catch(error => next(error));
 });
 
 // delete a person by id
@@ -57,6 +55,7 @@ app.delete('/api/persons/:id', (req, res) => {
             res.status(500).json({ error: 'Error Deleting person' });
         });
 });
+
 app.get('/info', (req, res) => {
     Person.countDocuments({})
         .then(count => {
@@ -68,6 +67,17 @@ app.get('/info', (req, res) => {
             res.status(500).send('Error counting documents');
         });
 });
+
+const unknownEndpoint = (req, res) => { res.status(404).send({ error: 'unknown endpoint' }) };
+
+const errorHandler = (error, req, res, next) => {
+    console.error(error.message);
+    if (error.name === 'CastError') return res.status(400).send({ error: 'malformed id' });
+    next(error);
+}
+
+app.use(unknownEndpoint);
+app.use(errorHandler);
 
 app.listen(PORT, () => {
     console.log("Server is running in the server at " + PORT);
