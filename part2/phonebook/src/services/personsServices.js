@@ -17,7 +17,6 @@ const getAPerson = (id) => {
     return axios.get(`${BASE_URL}/${id}`).then(res => res.data);
 }
 
-// TODO: in server
 const updatePerson = (id, person) => {
     return axios.put(`${BASE_URL}/${id}`, person).then(response => response.data);
 }

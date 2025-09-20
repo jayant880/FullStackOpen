@@ -32,7 +32,7 @@ const App = () => {
     setTimeout(() => {
       setMessage("");
       setError(null);
-    }, 2000);
+    }, 4000);
   }, [error]);
 
   useEffect(() => {

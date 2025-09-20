@@ -58,7 +58,7 @@ const PersonForm = ({ persons, setPersons, setMessage, setError }) => {
         .catch((error) => {
           console.error("Error creating person:", error);
           setError(true);
-          setMessage(`Could not add ${newName}`);
+          setMessage(`${error.response.data.error}`);
         });
     }
   };

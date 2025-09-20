@@ -15,14 +15,14 @@ app.use(morgan(`:method :url :status :res[content-length] - :response-time ms :n
 
 // endpoints
 // get all persons
-app.get('/api/persons', (req, res) => {
+app.get('/api/persons', (req, res, next) => {
     Person.find({}).then(result => {
         res.status(200).json(result);
-    })
+    }).catch(error => next(error));
 });
 
 // save a person
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
     const { name, number } = req.body;
 
     if (!name || !number) {
@@ -30,9 +30,10 @@ app.post('/api/persons', (req, res) => {
     }
 
     const person = new Person({ name, number });
-    person.save().then(savedPerson => res.json(savedPerson));
+    person.save().then(savedPerson => res.json(savedPerson)).catch(error => next(error));
 });
 
+// update the person by id
 app.put('/api/persons/:id', (req, res) => {
     const id = req.params.id;
     const { name, number } = req.body;
@@ -85,6 +86,7 @@ const unknownEndpoint = (req, res) => { res.status(404).send({ error: 'unknown e
 const errorHandler = (error, req, res, next) => {
     console.error(error.message);
     if (error.name === 'CastError') return res.status(400).send({ error: 'malformed id' });
+    else if (error.name === 'ValidationError') return res.status(400).send({ error: error.message });
     next(error);
 }
 
