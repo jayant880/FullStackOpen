@@ -126,19 +126,29 @@ describe('mostBlogs', () => {
         const result = listHelper.mostBlogs(testBlogs);
         assert.deepStrictEqual(result, expected);
     });
+});
 
-    test('when multiple authors have same number of blogs returns first one encountered', () => {
-        const tiedBlogs = [
-            { author: 'Author A', title: 'Title 1', likes: 1 },
-            { author: 'Author B', title: 'Title 2', likes: 2 },
-            { author: 'Author A', title: 'Title 3', likes: 3 }
-        ];
+describe('mostLikes', () => {
+    test('of empty list returns null', () => {
+        const result = listHelper.mostLikes([]);
+        assert.strictEqual(result, null);
+    });
 
-        const result = listHelper.mostBlogs(tiedBlogs);
+    test('when list has only one blog returns that author with its likes', () => {
         const expected = {
-            author: 'Author A',
-            blogs: 2
+            author: 'Edsger W. Dijkstra',
+            likes: 5
         };
+        const result = listHelper.mostLikes(singleBlog);
+        assert.deepStrictEqual(result, expected);
+    });
+
+    test('of a bigger list returns author with most total likes', () => {
+        const expected = {
+            author: 'Edsger W. Dijkstra',
+            likes: 17
+        };
+        const result = listHelper.mostLikes(testBlogs);
         assert.deepStrictEqual(result, expected);
     });
 });
