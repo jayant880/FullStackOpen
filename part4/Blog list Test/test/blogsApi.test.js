@@ -2,28 +2,49 @@ const { test, describe, beforeEach, after } = require('node:test');
 const assert = require('node:assert');
 const mongoose = require('mongoose');
 const supertest = require('supertest');
-const app = require("../app");
+const app = require('../app');
 const Blog = require('../model/blog');
-const { blogsInDb } = require('../utils/test_helper');
-const { info } = require('../utils/logger');
+const config = require('../utils/config');
 
 const api = supertest(app);
 
-test('blog are returned as json', async () => {
-    await api.get('/api/blogs').expect(200).expect('Content-Type', /application\/json/);
-});
+const initialBlogs = [
+    {
+        title: 'First Blog',
+        author: 'John Doe',
+        url: 'http://firstblog.com',
+        likes: 5
+    },
+    {
+        title: 'Second Blog',
+        author: 'Jane Smith',
+        url: 'http://secondblog.com',
+        likes: 10
+    }
+]
 
-test('all blogs are returned', async () => {
-    const response = await api.get('/api/blogs');
-    assert.strictEqual(response.body.length, 2);
+beforeEach(async () => {
+    await Blog.deleteMany({});
+    await Blog.insertMany(initialBlogs);
 })
 
-test('unique identifier property of blog posts is named id', async () => {
-    const response = await api.get('/api/blogs');
-    const blog = response.body[0];
-    assert.strictEqual(blog.id !== undefined, true);
-    assert.strictEqual(blog._id, undefined);
-});
+describe('when there are initially some blogs saved', () => {
+    test('blogs are returned as json', async () => {
+        await api.get('/api/blogs').expect(200).expect('Content-Type', /application\/json/);
+    });
+
+    test('all blogs are returned', async () => {
+        const res = await api.get('/api/blogs');
+        assert.strictEqual(res.body.length, initialBlogs.length);
+    })
+
+    test('unique identifier property of blog posts is named id', async () => {
+        const res = await api.get('/api/blogs');
+        const blog = res.body[0];
+        assert.strictEqual(blog.id !== undefined, true);
+        assert.strictEqual(blog._id, undefined);
+    });
+})
 
 describe('addition of new blog', () => {
     test('succeeds with valid data', async () => {
@@ -35,12 +56,28 @@ describe('addition of new blog', () => {
         };
         await api.post('/api/blogs').send(newBlog).expect(201).expect('Content-Type', /application\/json/);
 
-        const blogAtEnd = await blogsInDb();
-        assert.strictEqual(blogAtEnd.length, 3);
+        const res = await api.get('/api/blogs')
+        assert.strictEqual(res.body.length, initialBlogs.length + 1);
 
-        const titles = blogAtEnd.map(b => b.title);
+        const titles = res.body.map(b => b.title);
         assert.strictEqual(titles.includes('Test Driven Development'), true);
-    })
+    });
+
+    test('defaults likes to 0 if missing from request', async () => {
+        const newBlog = {
+            title: 'Blog without likes',
+            author: 'Test Author',
+            url: 'http://test.com',
+        };
+
+        const res = await api
+            .post('/api/blogs')
+            .send(newBlog)
+            .expect(201)
+
+
+        assert.strictEqual(res.body.likes, 0);
+    });
 })
 
 after(async () => {
