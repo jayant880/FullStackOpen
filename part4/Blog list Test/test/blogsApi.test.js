@@ -15,3 +15,12 @@ test('all blogs are returned', async () => {
     const response = await api.get('/api/blogs');
     assert.strictEqual(response.body.length, 2);
 })
+
+test('unique identifier property of blog posts is named id', async () => {
+    const response = await api.get('/api/blogs');
+    const blog = response.body[0];
+    console.log(blog);
+    assert.strictEqual(blog.id !== undefined, true);
+    assert.strictEqual(blog._id, undefined);
+});
+
