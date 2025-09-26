@@ -139,6 +139,100 @@ describe('deletion of a blog', () => {
     });
 });
 
+describe('updating a blog', () => {
+    test('succeeds with valid data', async () => {
+        const blogsAtStart = await Blog.find({});
+        const blogToUpdate = blogsAtStart[0];
+
+        const updatedBlogData = {
+            title: 'Updated Blog title',
+            author: 'Updated Author',
+            url: 'http://updatedUrl.com',
+            likes: 10101,
+        }
+
+        const res = await api
+            .put(`/api/blogs/${blogToUpdate.id}`)
+            .send(updatedBlogData)
+            .expect(200)
+            .expect('Content-Type', /application\/json/)
+
+        assert.strictEqual(res.body.title, updatedBlogData.title);
+        assert.strictEqual(res.body.author, updatedBlogData.author);
+        assert.strictEqual(res.body.url, updatedBlogData.url);
+        assert.strictEqual(res.body.likes, updatedBlogData.likes);
+        assert.strictEqual(res.body.id, blogToUpdate.id);
+    })
+
+    test('updating only likes succeeds', async () => {
+        const blogsAtStart = await Blog.find({});
+        const blogToUpdate = blogsAtStart[0];
+
+        const updatedLikes = {
+            title: blogToUpdate.title,
+            author: blogToUpdate.author,
+            url: blogToUpdate.url,
+            likes: 50
+        };
+
+        const response = await api
+            .put(`/api/blogs/${blogToUpdate.id}`)
+            .send(updatedLikes)
+            .expect(200);
+
+        assert.strictEqual(response.body.likes, updatedLikes.likes);
+        assert.strictEqual(response.body.title, blogToUpdate.title);
+        assert.strictEqual(response.body.author, blogToUpdate.author);
+        assert.strictEqual(response.body.url, blogToUpdate.url);
+    });
+
+    test('fails with status code 400 if required fields are missing', async () => {
+        const blogsAtStart = await Blog.find({});
+        const blogToUpdate = blogsAtStart[0];
+
+        const invalidBlogData = {
+            author: 'Only Author Provided'
+        };
+
+        await api
+            .put(`/api/blogs/${blogToUpdate.id}`)
+            .send(invalidBlogData)
+            .expect(400);
+    });
+
+    test('fails with status code 404 if blog does not exist', async () => {
+        const validNonexistingId = new mongoose.Types.ObjectId().toString();
+
+        const updatedBlogData = {
+            title: 'Non-existent Blog',
+            author: 'Ghost Author',
+            url: 'http://ghost.com',
+            likes: 1
+        };
+
+        await api
+            .put(`/api/blogs/${validNonexistingId}`)
+            .send(updatedBlogData)
+            .expect(404);
+    });
+
+    test('fails with status code 400 if id is invalid', async () => {
+        const invalidId = 'invalid-id-format';
+
+        const updatedBlogData = {
+            title: 'Test Blog',
+            author: 'Test Author',
+            url: 'http://test.com',
+            likes: 1
+        };
+
+        await api
+            .put(`/api/blogs/${invalidId}`)
+            .send(updatedBlogData)
+            .expect(400);
+    });
+})
+
 after(async () => {
     await mongoose.connection.close();
 })
