@@ -78,6 +78,32 @@ describe('addition of new blog', () => {
 
         assert.strictEqual(res.body.likes, 0);
     });
+
+    test('fails with status code 400 if title is missing', async () => {
+        const newBlog = {
+            author: 'Tester',
+            url: 'http://test.this.com',
+            likes: 1
+        };
+
+        await api
+            .post('/api/blogs')
+            .send(newBlog)
+            .expect(400)
+    });
+
+    test('fails with status code 400 if url is missing', async () => {
+        const newBlog = {
+            title: 'No URL Blog',
+            author: 'Anonymous',
+            likes: 1
+        };
+
+        await api
+            .post('/api/blogs')
+            .send(newBlog)
+            .expect(400);
+    });
 })
 
 after(async () => {
