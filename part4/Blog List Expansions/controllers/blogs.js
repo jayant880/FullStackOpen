@@ -1,9 +1,43 @@
 const blogRouter = require('express').Router();
 const Blog = require('../models/blog');
+const User = require('../models/user');
 
 blogRouter.get('/', async (req, res) => {
-    const blogs = await Blog.find({});
+    const blogs = await Blog.find({}).populate('user', { username: 1, name: 1 });
     res.json(blogs);
+})
+
+blogRouter.post('/', async (req, res) => {
+    const body = req.body;
+
+    if (!body.title || !body.url) {
+        return res.status(400).json({ error: 'Title and URL is required' });
+    }
+
+    const user = await User.findOne({});
+    if (!user) {
+        return res.status(400).json({ error: 'No users found' });
+    }
+
+    const blog = new Blog({
+        title: body.title,
+        author: body.author,
+        url: body.url,
+        likes: body.likes || 0
+    });
+
+    try {
+        const savedBlog = await blog.save();
+
+        user.blog = user.blog.concat(savedBlog._id);
+        await user.save();
+
+        await savedBlog.populate('user', { username: 1, nam: 1 });
+
+        res.status(201).json(savedBlog);
+    } catch (error) {
+        res.status(400).json({ error: error.message })
+    }
 })
 
 blogRouter.get('/:id', async (req, res) => {
@@ -19,27 +53,6 @@ blogRouter.get('/:id', async (req, res) => {
     }
 })
 
-blogRouter.post('/', async (req, res) => {
-    const body = req.body;
-
-    if (!body.title || !body.url) {
-        return res.status(400).json({ error: 'Title and URL is required' });
-    }
-
-    const blog = new Blog({
-        title: body.title,
-        author: body.author,
-        url: body.url,
-        likes: body.likes || 0
-    });
-
-    try {
-        const savedBlog = await blog.save();
-        res.status(201).json(savedBlog);
-    } catch (error) {
-        res.status(400).json({ error: error.message })
-    }
-})
 
 blogRouter.delete('/:id', async (req, res) => {
     try {
