@@ -8,15 +8,6 @@ blogRouter.get('/', async (req, res) => {
     res.json(blogs);
 })
 
-const getTokenFrom = req => {
-    const auth = req.get('authorization');
-    if (auth && auth.statsWith('Bearer ')) {
-        return auth.replace('Bearer ', '');
-    }
-    return null
-}
-
-
 blogRouter.post('/', async (req, res) => {
     const body = req.body;
 
@@ -24,7 +15,7 @@ blogRouter.post('/', async (req, res) => {
         return res.status(400).json({ error: 'Title and URL is required' });
     }
 
-    const token = getTokenFrom(req);
+    const token = req.token;
     if (!token) {
         return res.status(401).json({ error: 'token missing' });
     }
