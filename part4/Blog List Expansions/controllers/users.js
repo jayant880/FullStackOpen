@@ -15,16 +15,29 @@ userRouter.post('/', async (req, res) => {
     try {
         const { username, password, name } = req.body;
 
+        if (!username || !password) {
+            return res.status(400).json({
+                error: 'Username and password are required'
+            });
+        }
+
+        if (username.length < 3) {
+            return res.status(400).json({
+                error: 'Username must be at least 3 characters long'
+            });
+        }
+
+        if (password.length < 3) {
+            return res.status(400).json({
+                error: 'Password must be at least 3 characters long'
+            });
+        }
+
         const existingUser = await User.findOne({ username });
         if (existingUser) {
             return res.status(400).json({ error: 'Username must be unique' });
         }
 
-        if (!password || password.length < 3) {
-            return res.status(400).json({
-                error: 'Password must be at least 3 character long'
-            });
-        }
         const saltRound = 10
         const passwordHash = await bcryptjs.hash(password, saltRound);
 
