@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import Blog from "./components/Blog";
 import BlogForm from "./components/BlogForm";
-import blogService from "./services/blogs";
 import Login from "./components/Login";
+import Notification from "./components/Notification";
+import blogService from "./services/blogs";
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
   const [user, setUser] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem("loggedBlogappUser");
@@ -22,17 +23,16 @@ const App = () => {
     blogService.getAll().then((blogs) => setBlogs(blogs));
   }, []);
 
-  if (user === null) {
-    return (
-      <div>
-        <Login setUser={setUser} setErrorMessage={setErrorMessage} />
-      </div>
-    );
-  }
-
   const handleLogout = () => {
     window.localStorage.removeItem("loggedBlogappUser");
     setUser(null);
+  };
+
+  const showNotification = (message, type = "success") => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 5000);
   };
 
   const addBlog = (blogObject) => {
@@ -40,30 +40,39 @@ const App = () => {
       .create(blogObject)
       .then((returnedBlog) => {
         setBlogs(blogs.concat(returnedBlog));
-        setErrorMessage(
+        showNotification(
           `a new blog ${returnedBlog.title} by ${returnedBlog.author} added`
         );
-        setTimeout(() => {
-          setErrorMessage(null);
-        }, 5000);
       })
       .catch((error) => {
-        setErrorMessage("Error creating blog");
-        setTimeout(() => {
-          setErrorMessage(null);
-        }, 5000);
+        showNotification("Error creating blog", "error");
       });
   };
+
+  if (user === null) {
+    return (
+      <div>
+        <Notification
+          message={notification?.message}
+          type={notification?.type}
+        />
+        <Login
+          setUser={setUser}
+          setErrorMessage={(msg) => showNotification(msg, "error")}
+        />
+      </div>
+    );
+  }
 
   return (
     <div>
       <h2>blogs</h2>
 
-      {errorMessage && <div className="error">{errorMessage}</div>}
+      <Notification message={notification?.message} type={notification?.type} />
 
       <p>
         {user.name} logged in
-        <button onClick={handleLogout}>Logout</button>
+        <button onClick={handleLogout}>logout</button>
       </p>
 
       <BlogForm createBlog={addBlog} />

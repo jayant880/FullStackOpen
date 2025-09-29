@@ -16,14 +16,12 @@ const Login = ({ setUser, setErrorMessage }) => {
       setPassword("");
     } catch {
       setErrorMessage("Wrong credentials");
-      setTimeout(() => {
-        setErrorMessage(null);
-      }, 5000);
     }
   };
+
   return (
-    <>
-      <h1>Log in to application</h1>
+    <div>
+      <h2>Log in to application</h2>
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="username">username</label>
@@ -45,7 +43,7 @@ const Login = ({ setUser, setErrorMessage }) => {
         </div>
         <button type="submit">Login</button>
       </form>
-    </>
+    </div>
   );
 };
 
