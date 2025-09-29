@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import Blog from "./components/Blog";
 import BlogForm from "./components/BlogForm";
+import Togglable from "./components/Togglable";
 import Login from "./components/Login";
 import Notification from "./components/Notification";
 import blogService from "./services/blogs";
-import Togglable from "./components/Toggable";
 
 const App = () => {
   const [blogs, setBlogs] = useState([]);
@@ -45,10 +45,44 @@ const App = () => {
           `a new blog ${returnedBlog.title} by ${returnedBlog.author} added`
         );
       })
-      .catch((error) => {
+      .catch(() => {
         showNotification("Error creating blog", "error");
       });
   };
+
+  const updateBlog = (id, updatedBlog) => {
+    const blogToUpdate = {
+      ...updatedBlog,
+      user: updatedBlog.user.id || updatedBlog.user,
+    };
+
+    blogService
+      .update(id, blogToUpdate)
+      .then((returnedBlog) => {
+        setBlogs(blogs.map((blog) => (blog.id === id ? returnedBlog : blog)));
+        showNotification(`blog ${returnedBlog.title} updated`);
+      })
+      .catch(() => {
+        showNotification("Error updating blog", "error");
+      });
+  };
+
+  const deleteBlog = (id) => {
+    const blogToDelete = blogs.find((blog) => blog.id === id);
+    blogService
+      .remove(id)
+      .then(() => {
+        setBlogs(blogs.filter((blog) => blog.id !== id));
+        showNotification(
+          `blog ${blogToDelete.title} by ${blogToDelete.author} removed`
+        );
+      })
+      .catch(() => {
+        showNotification("Error deleting blog", "error");
+      });
+  };
+
+  const sortedBlogs = blogs.sort((a, b) => b.likes - a.likes);
 
   if (user === null) {
     return (
@@ -80,8 +114,14 @@ const App = () => {
         <BlogForm createBlog={addBlog} />
       </Togglable>
 
-      {blogs.map((blog) => (
-        <Blog key={blog.id} blog={blog} />
+      {sortedBlogs.map((blog) => (
+        <Blog
+          key={blog.id}
+          blog={blog}
+          updateBlog={updateBlog}
+          deleteBlog={deleteBlog}
+          user={user}
+        />
       ))}
     </div>
   );

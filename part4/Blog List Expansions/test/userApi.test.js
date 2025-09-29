@@ -18,6 +18,11 @@ const initialUsers = [
         name: "Second User",
         password: "password123",
     },
+    {
+        username: 'Jayant',
+        name: 'Jayant kumar singh',
+        password: 'Password'
+    }
 ]
 
 beforeEach(async () => {

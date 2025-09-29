@@ -1,5 +1,8 @@
 const Notification = ({ message, type = "success" }) => {
-  if (message === null) return null;
+  if (message === null) {
+    return null;
+  }
+
   return <div className={type}>{message}</div>;
 };
 
