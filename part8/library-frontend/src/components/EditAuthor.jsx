@@ -1,21 +1,30 @@
-import { useMutation } from "@apollo/client/react";
+import { useMutation, useQuery } from "@apollo/client/react";
 import { useState } from "react";
 import { ALL_AUTHORS, EDIT_AUTHOR } from "../service/queries";
 
 const EditAuthor = () => {
-  const [name, setName] = useState("");
+  const [selectedAuthor, setSelectedAuthor] = useState("");
   const [year, setYear] = useState("");
   const [error, setError] = useState("");
+
+  const { data } = useQuery(ALL_AUTHORS);
+  const authors = data?.allAuthors || [];
 
   const [editAuthor] = useMutation(EDIT_AUTHOR, {
     refetchQueries: [{ query: ALL_AUTHORS }],
     onError: (error) => {
       console.error("Error while updating Author", error.message);
+      setError(error.message);
     },
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!selectedAuthor) {
+      setError("Please select an author");
+      return;
+    }
 
     const yearNum = parseInt(year);
     if (!yearNum) {
@@ -26,31 +35,39 @@ const EditAuthor = () => {
     try {
       await editAuthor({
         variables: {
-          name,
+          name: selectedAuthor,
           setBornTo: yearNum,
         },
       });
 
-      setName("");
+      setSelectedAuthor("");
       setYear("");
+      setError("");
     } catch (error) {
       console.error(error.message);
+      setError(error.message);
     }
   };
 
   return (
     <div>
       <h2>Set BirthYear</h2>
-      <p>{error}</p>
+      {error && <div>{error}</div>}
+
       <form onSubmit={handleSubmit}>
         <label>
-          name:
-          <input
-            type="text"
-            name="name"
-            value={name}
-            onChange={({ target }) => setName(target.value)}
-          />
+          author:
+          <select
+            value={selectedAuthor}
+            onChange={({ target }) => setSelectedAuthor(target.value)}
+          >
+            <option value="">Select an author</option>
+            {authors.map((author) => (
+              <option key={author.name} value={author.name}>
+                {author.name}
+              </option>
+            ))}
+          </select>
         </label>
         <br />
         <label>
