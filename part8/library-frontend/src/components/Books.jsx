@@ -1,4 +1,4 @@
-import { ALL_BOOKS } from "../service/queries";
+import { ALL_BOOKS } from "../graphql/queries";
 import { useQuery } from "@apollo/client/react";
 
 const Books = () => {
