@@ -1,83 +1,73 @@
-const data = require('./data');
-
-const getBooksByAuthor = (authorName) => {
-    return data.books.filter((book) => book.author === authorName);
-};
-
-const getAuthorByName = (name) => {
-    return data.authors.find((author) => author.name === name);
-};
+const Book = require('./models/Book');
+const Author = require('./models/Author');
+const { GraphQLError } = require('graphql');
 
 const resolvers = {
     Query: {
-        bookCount: () => data.books.length,
-        authorCount: () => data.authors.length,
-        allBooks: (root, args) => {
-            let filteredBooks = data.books;
+        bookCount: async () => await Book.countDocuments(),
+        authorCount: async () => await Author.countDocuments(),
+        allAuthors: async () => await Author.find({}),
+        allBooks: async (root, args) => {
+            let query = {};
 
             if (args.author) {
-                filteredBooks = filteredBooks.filter(
-                    (book) => book.author === args.author
-                );
+                const author = await Author.find({ name: args.author })
+                if (author) query.author = author._id;
             }
+            if (args.genre) query.genres = { $in: [args.genre] };
 
-            if (args.genre) {
-                filteredBooks = filteredBooks.filter((book) =>
-                    book.genres.includes(args.genre)
-                );
-            }
-
-            return filteredBooks;
-        },
-        allAuthors: () => {
-            return data.authors.map((author) => ({
-                ...author,
-                bookCount: getBooksByAuthor(author.name).length,
-            }));
+            return Book.find(query).populate('author');
         },
     },
     Mutation: {
-        addBook: (root, args) => {
-            const newBook = {
-                ...args,
-                id: crypto.randomUUID(),
-            };
-
-            data.books = data.books.concat(newBook);
-
-            const authorExists = data.authors.some(
-                (author) => author.name === args.author
-            );
-
-            if (!authorExists) {
-                const newAuthor = {
-                    name: args.author,
-                    id: crypto.randomUUID(),
-                };
-                data.authors = data.authors.concat(newAuthor);
-            }
-
-            return newBook;
-        },
-        editAuthor: (root, args) => {
-            const author = getAuthorByName(args.name);
-
+        addBook: async (root, args) => {
+            let author = await Author.find({ name: args.author });
             if (!author) {
-                return null;
+                author = new Author({ name: args.author });
+                await author.save();
             }
 
-            const updatedAuthor = {
-                ...author,
-                born: args.setBornTo,
-            };
+            const book = new Book({ ...args, author: author._id });
 
-            data.authors = data.authors.map((a) =>
-                a.name === args.name ? updatedAuthor : a
-            );
+            try {
+                await book.save();
+            } catch (error) {
+                throw new GraphQLError('Saving book failed', {
+                    extensions: {
+                        code: 'BAD_USER_INPUT',
+                        invalidArgs: args.title,
+                        error
+                    }
+                })
+            }
 
-            return updatedAuthor;
+            return book.populate('author');
         },
+        editAuthor: async (root, args) => {
+            const author = await Author.find({ name: args.name });
+            if (!author) return null;
+
+            author.born = args.setBornTol
+
+            try {
+                await author.save();
+            } catch (error) {
+                throw new GraphQLError('Editing author failed', {
+                    extensions: {
+                        code: 'BAD_USER_INPUT',
+                        invalidArgs: args.name,
+                        error
+                    }
+                })
+            }
+
+            return author
+        }
     },
+
+    Author: {
+        bookCount: async (root) => await Book.countDocuments({ author: root._id })
+    }
 };
 
 module.exports = { resolvers };
