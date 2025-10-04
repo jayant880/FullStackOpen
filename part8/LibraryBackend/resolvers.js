@@ -25,7 +25,16 @@ const resolvers = {
             let author = await Author.find({ name: args.author });
             if (!author) {
                 author = new Author({ name: args.author });
-                await author.save();
+
+                try {
+                    await author.save();
+                } catch (error) {
+                    throw new GraphQLError('Creating Author failed', {
+                        extensions: 'BAD_USER_INPUT',
+                        invalidArgs: args.author,
+                        error: error.message
+                    })
+                }
             }
 
             const book = new Book({ ...args, author: author._id });
@@ -37,7 +46,7 @@ const resolvers = {
                     extensions: {
                         code: 'BAD_USER_INPUT',
                         invalidArgs: args.title,
-                        error
+                        error: error.message
                     }
                 })
             }
@@ -57,7 +66,7 @@ const resolvers = {
                     extensions: {
                         code: 'BAD_USER_INPUT',
                         invalidArgs: args.name,
-                        error
+                        error: error.message
                     }
                 })
             }
