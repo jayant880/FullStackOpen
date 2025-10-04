@@ -13,7 +13,8 @@ const resolvers = {
             if (args.author) {
                 const author = await Author.find({ name: args.author })
                 if (author) query.author = author._id;
-            }
+            } else return [];
+
             if (args.genre) query.genres = { $in: [args.genre] };
 
             return Book.find(query).populate('author');
